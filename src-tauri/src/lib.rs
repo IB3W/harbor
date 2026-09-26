@@ -180,8 +180,25 @@ unsafe extern "system" fn maxguard_subclass_proc(
         GetMonitorInfoW, MonitorFromWindow, MONITORINFO, MONITOR_DEFAULTTONEAREST,
     };
     use windows::Win32::UI::Shell::DefSubclassProc;
-    use windows::Win32::UI::WindowsAndMessaging::{MINMAXINFO, WM_GETMINMAXINFO};
-    let res = DefSubclassProc(hwnd, msg, wparam, lparam);
+  use windows::Win32::UI::WindowsAndMessaging::{
+    MINMAXINFO,
+    PBT_APMRESUMEAUTOMATIC,
+    WM_GETMINMAXINFO,
+    WM_POWERBROADCAST,
+};
+
+let res = DefSubclassProc(hwnd, msg, wparam, lparam);
+
+if msg == WM_POWERBROADCAST {
+    let event = wparam.0 as u32;
+
+    if event == PBT_APMRESUMEAUTOMATIC {
+        eprintln!("[harbor::power] Windows resumed from sleep");
+    }
+}
+
+if msg == WM_GETMINMAXINFO {
+    
     if msg == WM_GETMINMAXINFO {
         let monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
         let mut mi = MONITORINFO {
